@@ -1,15 +1,14 @@
 #!/bin/bash
 
 INSTALL_DIR=$HOME/elk
-#LOGSTASH_PATH=logstash-1.4.0
-LOGSTASH_PATH=logstash-1.4.1.dev
-#LOGSTASH_BINARY=$LOGSTASH_PATH.tar.gz
-LOGSTASH_BINARY=logstash-latest.tar.gz
-ES_PATH=elasticsearch-1.1.1
+LOGSTASH_PATH=logstash-1.4.1
+LOGSTASH_BINARY=$LOGSTASH_PATH.tar.gz
+ES_PATH=elasticsearch-1.2.1
 ES_BINARY=$ES_PATH.tar.gz
 NFL_DATA_FILE_NAME=2012_nfl_pbp_data.csv
 NFL_DATA_BINARY=2012_nfl_pbp_data.csv.gz
-KIBANA_BINARY=kibana-latest.zip
+KIBANA_PATH=kibana-3.1.0
+KIBANA_BINARY=$KIBANA_PATH.tar.gz
 
 
 echo Installing ELK stack into $INSTALL_DIR
@@ -25,9 +24,8 @@ if test -s $LOGSTASH_BINARY
 then
     echo Logstash already Downloaded
 else
-	echo Downloading logstash 1.4.x
-#	curl -O https://download.elasticsearch.org/logstash/logstash/$LOGSTASH_BINARY
-  curl -O https://s3-us-west-2.amazonaws.com/build.elasticsearch.org/origin/master/nightly/JDK7/logstash-latest.tar.gz
+	echo Downloading $LOGSTASH_BINARY
+	curl -O https://download.elasticsearch.org/logstash/logstash/$LOGSTASH_BINARY
 fi
 
 if test -s $ES_BINARY
@@ -36,6 +34,14 @@ then
 else
 	echo Downloading $ES_PATH
 	curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/$ES_BINARY
+fi
+
+if test -s $KIBANA_BINARY
+then
+    echo Kibana already Downloaded
+else
+	echo Downloading $KIBANA_BINARY
+	curl -O https://download.elasticsearch.org/kibana/kibana/$KIBANA_BINARY
 fi
 
 echo Downloaded... Now installing
@@ -57,23 +63,14 @@ else
 	bin/plugin -i elasticsearch/marvel/latest
 fi
 
-if test -s $KIBANA_BINARY
-then
-    echo Kibana already Downloaded
-else
-	echo Downloading Kibana Latest
-	curl -O http://download.elasticsearch.org/kibana/kibana/kibana-latest.zip
-fi
-
 if [ -d "plugins/kibana" ];
 then
     echo Kibana already installed
 else
-	echo Installing Kibana latest	
-	mkdir -p plugins/kibana/
-	unzip -q kibana-latest.zip -d plugins/kibana/
-	mv plugins/kibana/kibana-latest plugins/kibana/_site
-
+  echo Installing $KIBANA_BINARY
+  mkdir -p plugins/kibana/
+  tar zxf ../$KIBANA_BINARY
+  mv $KIBANA_PATH plugins/kibana/_site
 fi
 
 cp ../week-by-week.json plugins/kibana/_site/app/dashboards/
